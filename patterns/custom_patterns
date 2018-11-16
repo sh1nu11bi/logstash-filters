@@ -97,4 +97,3 @@ SYSTEM_AUTH_6 %{SYSLOGTIMESTAMP:timestamp} %{SYSLOGHOST:src_hostname} useradd(?:
 SYSTEM_AUTH_7 %{SYSLOGTIMESTAMP:timestamp} %{SYSLOGHOST:src_hostname}? %{DATA:application}(?:\[%{POSINT:pid}\])?: %{GREEDYMULTILINE:message}
 SYSTEM_SYSLOG_1 %{SYSLOGTIMESTAMP:timestamp} %{SYSLOGHOST:src_hostname} %{DATA:application}(?:\[%{POSINT:pid}\])?: %{GREEDYMULTILINE:message}
 SYSTEM_SYSLOG_2 %{SYSLOGTIMESTAMP:timestamp} %{GREEDYMULTILINE:message}
-
