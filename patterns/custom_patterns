@@ -1,0 +1,100 @@
+#custom syslog event patterns
+HTTPD_SINKHOLE %{TIMESTAMP_ISO8601:timestamp},%{IPORHOST:src_ip},%{IPORHOST:dst_ip},%{POSINT:dst_port},%{HOSTNAME:website},%{DATA:queryparameter},(?:%{WORD:httpmethod} %{NOTSPACE:request}(?: HTTP/%{NUMBER:httpversion})?),%{DATA:referrer},%{NUMBER:responsecode},%{NUMBER:bytes},%{DATA:useragent}
+NETFILTERMAC %{MAC:dst_mac}:%{MAC:src_mac}
+
+#custom windows ad dns debug log file patterns
+WINDNS_BODY_1 %{WORD:response}\]%{SPACE}%{WORD:query_type}%{SPACE}%{WINDNS_QUERY:query}
+WINDNS_BODY_2 %{WORD:response}\]
+WINDNS_BODY_3 %{WORD:response}\]%{SPACE}\[%{GREEDYDATA:message_processing_error}\]
+WINDNS_BODY_4 %{GREEDYDATA:message_processing_error}
+WINDNS_FLAGSCHAR [ATDR\s]{0,8}
+WINDNS_FLAGSHEX [a-zA-Z0-9]{4}
+WINDNS_HEADER %{DATE_US:date}%{SPACE}%{TIME:time1}%{SPACE}%{WORD:time2}%{SPACE}%{WINDNS_THREADID:thread_id}%{SPACE}%{WORD:context}%{SPACE}%{BASE16NUM:internal_packet_id}%{SPACE}%{WINDNS_PROTOCOL:protocol_indicator}%{SPACE}%{WINDNS_SNDRCV:snd_rcv}%{SPACE}%{IPV4:src_ip}%{SPACE}%{WINDNS_XID:xid}%{SPACE}%{WINDNS_QUERYRESP:query_resp}%{SPACE}%{WINDNS_OPCODE:opcode}%{SPACE}\[%{WINDNS_FLAGSHEX:flags_hex}%{SPACE}%{WINDNS_FLAGSCHAR:flags_char}%{SPACE}%{GREEDYDATA:msg}
+WINDNS_OPCODE [QNU?]{1}
+WINDNS_PROTOCOL UDP|TCP
+WINDNS_QUERY .+$
+WINDNS_QUERYRESP R|\s{1}
+WINDNS_SNDRCV Snd|Rcv
+WINDNS_THREADID [a-zA-Z0-9]{4}
+WINDNS_XID [a-zA-Z0-9]{4}
+
+#pfsense patterns
+PFSENSE_APPLICATION %{DATA:application}%{PFSENSE_APPLICATION_PID}?:%{SPACE}%{GREEDYDATA:message}
+PFSENSE_APPLICATION_PID \[%{INT:pid}\]
+PFSENSE_CARP_DATA %{DATA:carp_type},%{INT:carp_ttl},%{INT:vhid},%{INT:version},%{INT:advbase},%{INT:advskew}
+PFSENSE_ECHO_DATA %{INT:icmp_id},%{INT:icmp_sequence}
+PFSENSE_ICMP_DATA %{DATA:icmp_type},(%{PFSENSE_ECHO_DATA}|%{PFSENSE_UNREACHPROTO_DATA}|%{PFSENSE_UNREACHPORT_DATA}|%{PFSENSE_OTHER_UNREACHABLE_DATA}|%{PFSENSE_NEEDFRAG_DATA}|%{PFSENSE_TSTAMP_DATA}|%{PFSENSE_TSTAMPREPLY_DATA}|%{PFSENSE_ICMP_DEFAULT_DATA})
+PFSENSE_ICMP_DEFAULT_DATA %{DATA:icmp_description}
+PFSENSE_ICMP_OTIME %{INT:icmp_otime}
+PFSENSE_ICMP_RTIME %{INT:icmp_rtime}
+PFSENSE_ICMP_TTIME %{INT:icmp_ttime}
+PFSENSE_IPV4_SPECIFIC_DATA %{DATA:tos},%{DATA:ecn},%{INT:ttl},%{INT:id},%{INT:offset},%{DATA:flags},%{INT:protocol_id},%{WORD:protocol_text}
+PFSENSE_IPV6_SPECIFIC_DATA %{DATA:class},%{DATA:flow_label},%{INT:hop_limit},%{WORD:protocol_text},%{INT:protocol_id}
+PFSENSE_IP_DATA %{INT:length},%{IP:src_ip},%{IP:dst_ip}
+PFSENSE_IP_SPECIFIC_DATA (%{PFSENSE_IPV4_SPECIFIC_DATA}|%{PFSENSE_IPV6_SPECIFIC_DATA}),%{PFSENSE_IP_DATA},%{PFSENSE_PROTOCOL_SPECIFIC_DATA}
+PFSENSE_LOG_DATA %{INT:rule_main},%{INT:rule_sub}?,%{DATA:anchor}?,%{INT:tracker},%{DATA:intf},%{DATA:reason},%{WORD:action},%{WORD:direction},%{INT:ip_version},%{PFSENSE_IP_SPECIFIC_DATA}
+PFSENSE_NEEDFRAG_DATA %{IP:dst_ip},%{INT:icmp_mtu}
+PFSENSE_OTHER_UNREACHABLE_DATA %{DATA:icmp_description}
+PFSENSE_PROTOCOL_SPECIFIC_DATA (%{PFSENSE_TCP_DATA}|%{PFSENSE_UDP_DATA}|%{PFSENSE_ICMP_DATA}|%{PFSENSE_CARP_DATA})
+PFSENSE_TCP_DATA %{INT:src_port},%{INT:dst_port},%{INT:data_length},%{DATA:tcp_flags},%{INT:sequence_number},%{INT:ack_number},%{INT:tcp_window},%{DATA:urg},%{DATA:tcp_options}
+PFSENSE_TSTAMPREPLY_DATA %{INT:icmp_id},%{INT:icmp_sequence},%{PFSENSE_ICMP_OTIME},%{PFSENSE_ICMP_RTIME},%{PFSENSE_ICMP_TTIME}
+PFSENSE_TSTAMP_DATA %{INT:icmp_id},%{INT:icmp_sequence}
+PFSENSE_UDP_DATA %{INT:src_port},%{INT:dst_port},%{INT:data_length}
+PFSENSE_UNREACHPORT_DATA %{IP:dst_ip},%{INT:unreachable_protocol_id},%{INT:unreachable_port_number}
+PFSENSE_UNREACHPROTO_DATA %{IP:dst_ip},%{INT:unreachable_protocol_id}
+
+#filebeat module patterns
+APACHE_ACCESS_1 %{IPORHOST:src_ip} - %{DATA:user_name} \[%{HTTPDATE:time}\] \"%{WORD:method} %{DATA:url} HTTP/%{NUMBER:http_version}\" %{NUMBER:response_code} (?:%{NUMBER:body_sent_bytes}|-)( \"%{DATA:referrer}\")?( \"%{DATA:agent}\")?
+APACHE_ACCESS_2 %{IPORHOST:src_ip} - %{DATA:user_name} \[%{HTTPDATE:time}\] \"-\" %{NUMBER:response_code} -
+APACHE_ERROR_1 \[%{APACHE_TIME:timestamp}\] \[%{LOGLEVEL:level}\]( \[client %{IPORHOST:src_ip}\])? %{GREEDYDATA:message}
+APACHE_ERROR_2 \[%{APACHE_TIME:timestamp}\] \[%{DATA:module}:%{LOGLEVEL:level}\] \[pid %{NUMBER:pid}(:tid %{NUMBER:tid})?\]( \[client %{IPORHOST:src_ip}\])? %{GREEDYDATA:message}
+APACHE_TIME %{DAY} %{MONTH} %{MONTHDAY} %{TIME} %{YEAR}
+AUDITD_1 %{AUDIT_PREFIX} %{AUDIT_KEY_VALUES:kv} old auid=%{NUMBER:old_auid} new auid=%{NUMBER:new_auid} old ses=%{NUMBER:old_ses} new ses=%{NUMBER:new_ses}
+AUDITD_2 %{AUDIT_PREFIX} %{AUDIT_KEY_VALUES:kv} msg=['\"](%{DATA:msg}\s+)?%{AUDIT_KEY_VALUES:sub_kv}['\"]
+AUDITD_3 %{AUDIT_PREFIX} %{AUDIT_KEY_VALUES:kv}
+AUDITD_4 %{AUDIT_PREFIX}
+AUDITD_5 %{AUDIT_TYPE} %{AUDIT_KEY_VALUES:kv}
+AUDIT_KEY_VALUES %{WORD}=%{GREEDYDATA}
+AUDIT_PREFIX %{AUDIT_TYPE} msg=audit\(%{NUMBER:epoch}:%{NUMBER:sequence}\):(%{DATA})?
+AUDIT_TYPE ^type=%{NOTSPACE:record_type}
+ES_AUDIT \[%{TIMESTAMP_ISO8601:timestamp]}\]\s*(\[%{WORD:node_name}\])?\s*\[%{WORD:layer]}\]\s*\[%{WORD:event_type]}\]\s*(origin_type\=\[%{WORD:origin_type]}\])?,?\s*(origin_address\=\[%{IPORHOST:origin_address]}\])?,?\s*(principal\=\[%{WORD:principal]}\])?,?\s*(action\=\[%{DATA:action]}\])?,?\s*?(uri=\[%{DATA:uri]}\])?,?\s*(request\=\[%{WORD:request]}\])?,?\s*(request_body\=\[%{DATA:request_body]}\])?,?
+ES_DEPRECIATION \[%{TIMESTAMP_ISO8601:timestamp}\]\[%{LOGLEVEL:log_level}%{SPACE}*\]\[%{DATA:component|%{SPACE}*\] %{GREEDYMULTILINE:message}
+ES_GC_1 (?:%{JVM8HEADER}|%{JVM9HEADER}) Total time for which application threads were stopped: %{BASE10NUM:threads_total_stop_time_sec} seconds, Stopping threads took: %{BASE10NUM:stopping_threads_time_sec} seconds
+ES_GC_2 (?:%{JVM8HEADER}) \[GC \(%{DATA:phase_name}\) \[YG occupancy: %{BASE10NUM:young_gen_used_kb} K \(%{BASE10NUM:young_gen_size_kb} K\)\]%{BASE10NUM}: \[Rescan \(parallel\) , %{BASE10NUM:phase_parallel_rescan_time_sec} secs\]%{BASE10NUM}: \[weak refs processing, %{BASE10NUM:phase_weak_refs_processing_time_sec} secs\]%{BASE10NUM}: \[class unloading, %{BASE10NUM:phase_class_unload_time_sec} secs\]%{BASE10NUM}: \[scrub symbol table, %{BASE10NUM:phase_scrub_symbol_table_time_sec} secs\]%{BASE10NUM}: \[scrub string table, %{BASE10NUM:phase_scrub_string_table_time_sec} secs\]\[1 CMS-remark: %{BASE10NUM:old_gen_used_kb}K\(%{BASE10NUM:old_gen_size_kb}K\)\] %{BASE10NUM:heap_used_kb}K\(%{BASE10NUM:heap_size_kb}K\), %{BASE10NUM:phase_duration_sec} secs\] %{PROCTIME}
+ES_GC_3 (?:%{JVM8HEADER}) \[GC \(%{DATA:phase_name}\) \[%{BASE10NUM} CMS-initial-mark: %{BASE10NUM:old_gen_used_kb}K\(%{BASE10NUM:old_gen_size_kb}K\)\] %{BASE10NUM:heap_used_kb}K\(%{BASE10NUM:heap_size_kb}K\), %{BASE10NUM:phase_duration_sec} secs\] %{PROCTIME}
+ES_GC_4 %{JVM9HEADER} GC\(%{BASE10NUM}\) ParNew: %{BASE10NUM}K-\>%{BASE10NUM:young_gen_used_kb}K\(%{BASE10NUM:young_gen_size_kb}K\)
+ES_GC_5 %{JVM9HEADER} GC\(%{BASE10NUM}\) Old: %{BASE10NUM}K-\>%{BASE10NUM:old_gen_used_kb}K\(%{BASE10NUM:old_gen_size_kb}K\)
+ES_GC_6 (?:%{JVM8HEADER}|%{JVM9HEADER}) %{GREEDYMULTILINE:message}ES_SERVER \[%{TIMESTAMP_ISO8601:timestamp}\]\[%{LOGLEVEL:log_level}%{SPACE}?\]\[%{DATA:component}%{SPACE}*\](%{SPACE}*)?(\[%{DATA:elasticsearch.node.name}\])?(%{SPACE}*)?(\[gc\](\[young\]\[%{NUMBER:gc.young.one}\]\[%{NUMBER:gc.young.two}\]|\[%{NUMBER:gc_overhead}\]))?%{SPACE}*((\[%{INDEXNAME:index_name}\]|\[%{INDEXNAME:index_name}\/%{DATA:index_id}\]))?%{SPACE}*%{GREEDYMULTILINE:message}
+ES_SERVER \[%{TIMESTAMP_ISO8601:timestamp}\]\[%{LOGLEVEL:log_level}%{SPACE}?\]\[%{DATA:component}%{SPACE}*\](%{SPACE}*)?(\[%{DATA:node_name}\])?(%{SPACE}*)?(\[gc\](\[young\]\[%{NUMBER:gc_young_one}\]\[%{NUMBER:gc_young_two}\]|\[%{NUMBER:gc_overhead}\]))?%{SPACE}*((\[%{INDEXNAME:index_name}\]|\[%{INDEXNAME:index_name}\/%{DATA:index_id}\]))?%{SPACE}*%{GREEDYMULTILINE:message}
+ES_SLOWLOG \[%{TIMESTAMP_ISO8601:timestamp}\]\[%{WORD:log_level}(%{SPACE}*)?\]\[%{DATA:logger}\]%{SPACE}*\[%{WORD:node_name}\](%{SPACE}*)?(\[%{INDEXNAME:index_name}\]\[%{NUMBER:shard_id}\])?(%{SPACE}*)?(\[%{INDEXNAME:index_name}\/%{DATA:index_id}\])?(%{SPACE}*)?%{SPACE}*(took\[%{DATA:took}\],)?%{SPACE}*(took_millis\[%{NUMBER:took_millis:int}\],)?%{SPACE}*(type\[%{DATA:type}\],)?%{SPACE}*(id\[%{DATA:id}\],)?%{SPACE}*(routing\[%{DATA:routing}\],)?%{SPACE}*(total_hits\[%{NUMBER:total_hits:int}\],)?%{SPACE}*(types\[%{DATA:types}\],)?%{SPACE}*(stats\[%{DATA:stats}\],)?%{SPACE}*(search_type\[%{DATA:search_type}\],)?%{SPACE}*(total_shards\[%{NUMBER:total_shards:int}\],)?%{SPACE}*(source\[%{GREEDYMULTILINE:source_query}\])?,?%{SPACE}*(extra_source\[%{DATA:extra_source}\])?,?
+GREEDYMULTILINE (.|\n)*
+IIS_ACCESS_1 %{TIMESTAMP_ISO8601:time} %{IPORHOST:dst_ip} %{WORD:method} %{URIPATH:url} %{NOTSPACE:query_string} %{NUMBER:dst_port} %{NOTSPACE:user_name} %{IPORHOST:src_ip} %{NOTSPACE:agent} %{NOTSPACE:referrer} %{NUMBER:response_code} %{NUMBER:sub_status} %{NUMBER:win32_status} %{NUMBER:request_time_ms}
+IIS_ACCESS_2 %{TIMESTAMP_ISO8601:time} %{NOTSPACE:site_name} %{WORD:method} %{URIPATH:url} %{NOTSPACE:query_string} %{NUMBER:dst_port} %{NOTSPACE:user_name} %{IPORHOST:src_ip} %{NOTSPACE:agent} %{NOTSPACE:cookie} %{NOTSPACE:referrer} %{NOTSPACE:src_hostname} %{NUMBER:response_code} %{NUMBER:sub_status} %{NUMBER:win32_status} %{NUMBER:body_sent.bytes} %{NUMBER:body_received.bytes} %{NUMBER:request_time_ms}
+IIS_ACCESS_3 %{TIMESTAMP_ISO8601:time} %{NOTSPACE:site_name} %{NOTSPACE:dst_hostname} %{IPORHOST:dst_ip} %{WORD:method} %{URIPATH:url} %{NOTSPACE:query_string} %{NUMBER:dst_port} %{NOTSPACE:user_name} %{IPORHOST:src_ip} HTTP/%{NUMBER:http_version} %{NOTSPACE:agent} %{NOTSPACE:cookie} %{NOTSPACE:referrer} %{NOTSPACE:src_hostname} %{NUMBER:response_code} %{NUMBER:sub_status} %{NUMBER:win32_status} %{NUMBER:body_sent.bytes} %{NUMBER:body_received.bytes} %{NUMBER:request_time_ms}
+IIS_ERROR %{TIMESTAMP_ISO8601:time} %{IPORHOST:src_ip} %{NUMBER:src_port} %{IPORHOST:dst_ip} %{IPORHOST:dst_port} (?:HTTP/%{NUMBER:http_version}|-) (?:%{WORD:method}|-) (?:%{URIPATHPARAM:url}|-)(?: -)? (?:%{NUMBER:response_code}|-) (?:%{NUMBER}|-) (?:%{NOTSPACE:reason_phrase}|-) (?:%{NOTSPACE:queue_name}|-)
+INDEXNAME [a-zA-Z0-9\_\.\-]*
+JVM8HEADER %{TIMESTAMP_ISO8601:timestamp}: %{BASE10NUM:jvm_runtime_sec}:
+JVM9HEADER \[%{TIMESTAMP_ISO8601:timestamp}\]\[%{POSINT:pid}\]\[%{DATA:es_gc_tags}%{SPACE}*\]
+LOGSTASH \[%{TIMESTAMP_ISO8601:timestamp}\]\[%{LOGSTASH_LOGLEVEL:level}\s?\]\[%{LOGSTASH_CLASS_MODULE:module}\] %{GREEDYDATA:message}
+LOGSTASH_CLASS_MODULE [\w\.]+\s*
+LOGSTASH_LOGLEVEL INFO|ERROR|DEBUG|FATAL|WARN|TRACE
+LOGSTASH_SLOWLOG_MESSAGE {:plugin_params=>%{GREEDYDATA:plugin_params}, :took_in_nanos=>%{NUMBER:took_in_nanos}, :took_in_millis=>%{NUMBER:took_in_millis}, :event=>%{GREEDYDATA:event}}
+LOGSTASH_SLOWLOG_MODULE slowlog.logstash.%{WORD:plugin_type}.%{WORD:plugin_name}
+LOCALDATETIME [0-9]+%{SPACE}%{TIME}
+MYSQL_ERROR_1 %{LOCALDATETIME:timestamp}%{SPACE}(\[%{DATA:level}\]{SPACE})?%{GREEDYDATA:message}
+MYSQL_ERROR_2 %{TIMESTAMP_ISO8601:timestamp} %{NUMBER:thread_id} \[%{DATA:level}\] %{GREEDYDATA:message}
+MYSQL_ERROR_3 %{GREEDYDATA:message}
+MYSQL_SLOWLOG ^# User@Host: %{USER:user}(\[[^\]]+\])? @ %{HOSTNAME:host} \[(IP:ip])?\](\s*Id:\s* %{NUMBER:id})?\n# Query_time: %{NUMBER:query_time][sec}\s* Lock_time: %{NUMBER:lock_time][sec}\s* Rows_sent: %{NUMBER:rows_sent}\s* Rows_examined: %{NUMBER:rows_examined}\n(SET timestamp=%{NUMBER:timestamp};\n)?%{GREEDYMULTILINE:query}
+NGINX_ACCESS %{IPORHOST:src_ip} - %{DATA:user_name} \[%{HTTPDATE:time}\] \"%{WORD:method} %{DATA:url} HTTP/%{NUMBER:http_version}\" %{NUMBER:response_code} %{NUMBER:body_sent_bytes} \"%{DATA:referrer}\" \"%{DATA:agent}\"
+NGINX_ERROR %{DATA:time} \[%{DATA:level}\] %{NUMBER:pid}#%{NUMBER:tid}: (\*%{NUMBER:connection_id} )?%{GREEDYDATA:message}
+PROCTIME \[Times: user=%{BASE10NUM:phase_cpu_time_user_sec} sys=%{BASE10NUM:phase_cpu_time_sys_sec}, real=%{BASE10NUM:phase_cpu_time_real_sec} secs\]
+SYSTEM_AUTH_1 %{SYSLOGTIMESTAMP:timestamp} %{SYSLOGHOST:src_hostname} sshd(?:\[%{POSINT:pid}\])?: %{DATA:ssh.event} %{DATA:ssh.method} for (invalid user )?%{DATA:user} from %{IPORHOST:src_ip} port %{NUMBER:src_port} ssh2(: %{GREEDYDATA:ssh.signature})?
+SYSTEM_AUTH_2 %{SYSLOGTIMESTAMP:timestamp} %{SYSLOGHOST:src_hostname} sshd(?:\[%{POSINT:pid}\])?: %{DATA:ssh.event} user %{DATA:user} from %{IPORHOST:src_ip}
+SYSTEM_AUTH_3 %{SYSLOGTIMESTAMP:timestamp} %{SYSLOGHOST:src_hostname} sshd(?:\[%{POSINT:pid}\])?: Did not receive identification string from %{IPORHOST:src_ip}
+SYSTEM_AUTH_4 %{SYSLOGTIMESTAMP:timestamp} %{SYSLOGHOST:src_hostname} sudo(?:\[%{POSINT:pid}\])?: \s*%{DATA:user} :( %{DATA:sudo.error} ;)? TTY=%{DATA:sudo.tty} ; PWD=%{DATA:sudo.pwd} ; USER=%{DATA:sudo.user} ; COMMAND=%{GREEDYDATA:sudo.command}
+SYSTEM_AUTH_5 %{SYSLOGTIMESTAMP:timestamp} %{SYSLOGHOST:src_hostname} groupadd(?:\[%{POSINT:pid}\])?: new group: name=%{DATA:groupadd.name}, GID=%{NUMBER:groupadd.gid}
+SYSTEM_AUTH_6 %{SYSLOGTIMESTAMP:timestamp} %{SYSLOGHOST:src_hostname} useradd(?:\[%{POSINT:pid}\])?: new user: name=%{DATA:useradd.name}, UID=%{NUMBER:useradd.uid}, GID=%{NUMBER:useradd.gid}, home=%{DATA:useradd.home}, shell=%{DATA:useradd.shell}$
+SYSTEM_AUTH_7 %{SYSLOGTIMESTAMP:timestamp} %{SYSLOGHOST:src_hostname}? %{DATA:application}(?:\[%{POSINT:pid}\])?: %{GREEDYMULTILINE:message}
+SYSTEM_SYSLOG_1 %{SYSLOGTIMESTAMP:timestamp} %{SYSLOGHOST:src_hostname} %{DATA:application}(?:\[%{POSINT:pid}\])?: %{GREEDYMULTILINE:message}
+SYSTEM_SYSLOG_2 %{SYSLOGTIMESTAMP:timestamp} %{GREEDYMULTILINE:message}
+
